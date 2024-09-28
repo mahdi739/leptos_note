@@ -6,15 +6,19 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-leptos = { version = "0.6.5", features = ["csr"] }
+leptos = { git = "https://github.com/leptos-rs/leptos", features = ["csr"] }
+reactive_stores = { git = "https://github.com/leptos-rs/leptos", package = "reactive_stores" }
+reactive_stores_macro = { git = "https://github.com/leptos-rs/leptos", package = "reactive_stores_macro" }
 console_log = "1"
-log = "0.4.20"
+log = "0.4.22"
 console_error_panic_hook = "0.1.7"
-chrono = { version = "0.4.34", features = ["serde"] }
-serde = { version = "1.0.196", features = ["derive"] }
-serde_json = "1.0.113"
-web-sys = { version = "0.3.68", features = ["Storage"] }
-leptos-use = { version = "0.10.2", features = [ "serde","serde_json"] }
+chrono = { version = "0.4.38", features = ["serde"] }
+serde = { version = "1.0.204", features = ["derive"] }
+serde_json = "1.0.121"
+web-sys = { version = "0.3.69", features = ["Storage"] }
+codee = { version = "0.1.2", features = ["json_serde"] }
+# leptos-use = { version = "0.14.0-beta5" }
+# leptos-mview = "0.3.2"
 
 [profile.release]
 codegen-units = 1
@@ -24,4 +28,3 @@ panic = "abort"
 strip = true
 [package.metadata.wasm-pack.profile.release]
 wasm-opt = ["-04"]
-
