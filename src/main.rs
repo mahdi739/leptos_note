@@ -10,17 +10,81 @@ fn main() {
 
   mount_to_body(App);
 }
-#[derive(Store, Clone, Debug, PartialEq, Eq, Hash, Serialize, Deserialize, Default)]
+#[derive(Clone, Debug, PartialEq, Eq, Hash, Serialize, Deserialize, Default)]
 pub struct State {
-  #[store(key: DateTime<Local> = |note| note.date)]
+  // #[store(key: DateTime<Local> = |note| note.date)]
   pub notes: Vec<Note>,
 }
 
-#[derive(Store, Clone, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
+pub trait StateStoreFields<AnyStoreField>
+where
+  AnyStoreField: reactive_stores::StoreField<Value = State> + Clone,
+{
+  fn notes(
+    &self,
+  ) -> reactive_stores::KeyedSubfield<AnyStoreField, State, DateTime<Local>, Vec<Note>>;
+}
+impl<AnyStoreField> StateStoreFields<AnyStoreField> for AnyStoreField
+where
+  AnyStoreField: reactive_stores::StoreField<Value = State> + Clone,
+{
+  fn notes(
+    &self,
+  ) -> reactive_stores::KeyedSubfield<AnyStoreField, State, DateTime<Local>, Vec<Note>> {
+    reactive_stores::KeyedSubfield::new(
+      self.clone(),
+      0usize.into(),
+      |note| note.date,
+      |prev| &prev.notes,
+      |prev| &mut prev.notes,
+    )
+  }
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub struct Note {
   pub title: String,
   pub content: String,
   pub date: DateTime<Local>,
+}
+pub trait NoteStoreFields<AnyStoreField>
+where
+  AnyStoreField: reactive_stores::StoreField<Value = Note> + Clone,
+{
+  fn title(&self) -> reactive_stores::Subfield<AnyStoreField, Note, String>;
+
+  fn content(&self) -> reactive_stores::Subfield<AnyStoreField, Note, String>;
+
+  fn date(&self) -> reactive_stores::Subfield<AnyStoreField, Note, DateTime<Local>>;
+}
+impl<AnyStoreField> NoteStoreFields<AnyStoreField> for AnyStoreField
+where
+  AnyStoreField: reactive_stores::StoreField<Value = Note> + Clone,
+{
+  fn title(&self) -> reactive_stores::Subfield<AnyStoreField, Note, String> {
+    reactive_stores::Subfield::new(
+      self.clone(),
+      0usize.into(),
+      |prev| &prev.title,
+      |prev| &mut prev.title,
+    )
+  }
+  fn content(&self) -> reactive_stores::Subfield<AnyStoreField, Note, String> {
+    reactive_stores::Subfield::new(
+      self.clone(),
+      1usize.into(),
+      |prev| &prev.content,
+      |prev| &mut prev.content,
+    )
+  }
+  fn date(&self) -> reactive_stores::Subfield<AnyStoreField, Note, DateTime<Local>> {
+    reactive_stores::Subfield::new(
+      self.clone(),
+      2usize.into(),
+      |prev| &prev.date,
+      |prev| &mut prev.date,
+    )
+  }
 }
 
 #[component]
