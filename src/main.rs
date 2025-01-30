@@ -90,32 +90,31 @@ fn App() -> impl IntoView {
           "ADD NEW NOTE"
         </button>
         <ul>
-          <ForEnumerate
-            each=move || state.notes()
-            key=move |note| note.date().get()
-            let(index,
-            child)
-          >
-            <li
-              class="note-item new-item"
-              class:selected=move || {
-                selected_note.get().is_some_and(|it| { it.date == child.get().date })
-              }
-              on:click=move |_| selected_note.set(Some(child.get()))
-            >
-              <div class="items">
-                <div class="title">
-                  {move || format!("{} {}", child.title().get(), index.get())}
-                </div>
-                <div class="content">{move || child.content().get()}</div>
-              </div>
+          {move || {
+            state
+              .notes()
+              .into_iter()
+              .map(|child| {
+                view! {
+                  <li
+                    class="note-item new-item"
+                    class:selected=move || {
+                      selected_note.get().is_some_and(|it| { it.date == child.get().date })
+                    }
+                    on:click=move |_| selected_note.set(Some(child.get()))
+                  >
+                    <div class="items">
+                      <div class="title">{move || format!("{}", child.title().get())}</div>
+                      <div class="content">{move || child.content().get()}</div>
+                    </div>
 
-              <button
-                on:click=delete_note(index.into(), child.into())
-                class="fa fa-trash delete-button"
-              ></button>
-            </li>
-          </ForEnumerate>
+                    // on:click=delete_note(index.into(), child.into())
+                    <button class="fa fa-trash delete-button"></button>
+                  </li>
+                }
+              })
+              .collect_view()
+          }}
         </ul>
       </div>
 
