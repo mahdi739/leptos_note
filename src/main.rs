@@ -1,6 +1,6 @@
 use chrono::{DateTime, Local};
 use leptos::{either::Either, leptos_dom::logging::console_log, prelude::*};
-use reactive_stores::{Field, OptionStoreExt as _, Store};
+use reactive_stores::{Field, OptionStoreExt as _, Store, StoreField};
 use serde::{Deserialize, Serialize};
 use web_sys::MouseEvent;
 
@@ -61,28 +61,11 @@ fn App() -> impl IntoView {
       });
     }
   };
-  let update_selected_note_title = move |event| {
-    state
-      .notes()
-      .into_iter()
-      .filter(|note| note.get().date == selected_note.unwrap().get().date)
-      .next()
-      .unwrap()
-      .title()
-      .set(event_target_value(&event));
-    selected_note.unwrap().title().set(event_target_value(&event)); // For Updating the selected item in the list
-  };
-  let update_selected_note_content = move |event| {
-    state
-      .notes()
-      .into_iter()
-      .filter(|note| note.get().date == selected_note.unwrap().get().date)
-      .next()
-      .unwrap()
-      .content()
-      .set(event_target_value(&event));
-    selected_note.unwrap().content().set(event_target_value(&event)); // For Updating the selected item in the list
-  };
+  Effect::new(move || {
+    selected_note.track();
+    console_log("From main");
+  });
+
   view! {
     <div id="main-div">
       <div id="list">
@@ -120,31 +103,31 @@ fn App() -> impl IntoView {
       </div>
 
       <div id="editor">
-        {move || match selected_note.get() {
-          Some(selected_note) => {
-            Either::Right(
-              view! {
-                <textarea
-                  id="title-editor"
-                  rows="2"
-                  prop:value=selected_note.title
-                  on:input=update_selected_note_title
-                ></textarea>
-                <textarea
-                  id="content-editor"
-                  prop:value=selected_note.content
-                  on:input=update_selected_note_content
-                ></textarea>
-              },
-            )
-          }
-          None => {
-            Either::Left(view! { <div style="margin:auto; font-size:21px;">"Pick a note"</div> })
-          }
-        }}
 
+        <Content selected_note />
       </div>
     </div>
+  }
+}
+#[component]
+fn Content(#[prop(into)] selected_note: Field<Option<Note>>) -> impl IntoView {
+  Effect::new(move || {
+    selected_note.track();
+    console_log("From content");
+  });
+
+  view! {
+    {move || match selected_note.get() {
+      Some(selected_note) => {
+        Either::Right(
+          view! {
+            <textarea prop:value=selected_note.title></textarea>
+            <textarea prop:value=selected_note.content></textarea>
+          },
+        )
+      }
+      None => Either::Left(view! { <div>"Pick a note"</div> }),
+    }}
   }
 }
 // #[component]
